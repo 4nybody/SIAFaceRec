@@ -16,15 +16,15 @@ class AdminLoginDialog(QDialog):
 
 		layout = QVBoxLayout()
 		self.username_edit = QLineEdit()
-		self.password_edit = QLineEdit()
-		self.password_edit.setEchoMode(QLineEdit.Password)
+		# self.password_edit = QLineEdit()
+		# self.password_edit.setEchoMode(QLineEdit.Password)
 		submit_button = QPushButton("Submit")
 		submit_button.clicked.connect(self.submit_clicked)
 
 		layout.addWidget(QLabel("Admin Username:"))
 		layout.addWidget(self.username_edit)
-		layout.addWidget(QLabel("Admin Password:"))
-		layout.addWidget(self.password_edit)
+		# layout.addWidget(QLabel("Admin Password:"))
+		# layout.addWidget(self.password_edit)
 		layout.addWidget(submit_button)
 
 		self.setLayout(layout)
@@ -39,17 +39,17 @@ class AdminLoginDialog(QDialog):
 
 	def submit_clicked(self):
 		admin_username = self.username_edit.text()
-		admin_password = self.password_edit.text()
+		# admin_password = self.password_edit.text()
 
 		# Query the database to check if the admin username and password are correct
-		query = "SELECT username FROM admin WHERE username = %s AND password = %s"
-		result = self.database_connector.fetch_one(query, (admin_username, admin_password))
-
+		query = "SELECT username FROM admin WHERE username = %s"
+		# result = self.database_connector.fetch_one(query, (admin_username, admin_password))
+		result = self.database_connector.fetch_one(query, [admin_username])
 		if result:
 			self.my_signal.emit()
 			self.accept()
-		else:
-			QMessageBox.warning(self, "Login Failed", "Invalid admin username or password. Please try again.")
+		# else:
+		# 	QMessageBox.warning(self, "Login Failed", "Invalid admin username or password. Please try again.")
 
 
 class UpdatePasswordDialog(QDialog):
@@ -100,7 +100,16 @@ class UpdatePasswordDialog(QDialog):
 		# Update the password in the database for the specified username
 		database_connector = DatabaseConnector(host='localhost', user='root', password='Se@n_03!602',
 											   database='attendance')
+		query = "SELECT username FROM admin WHERE username = %s"
+		# result = self.database_connector.fetch_one(query, (admin_username, admin_password))
+		result = database_connector.fetch_one(query, [username])
+		if not result:
+			QMessageBox.warning(self, "Error", "Username is required.")
+			return
+
+
 		update_query = "UPDATE admin SET password = %s WHERE username = %s"
+
 		try:
 			database_connector.execute_query(update_query, (new_password, username))
 			QMessageBox.information(self, "Success", "Password updated successfully.")
